@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <title>Brat Generator</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Impact&display=swap');
-
     body {
       margin: 0;
       display: flex;
@@ -14,7 +12,6 @@
       height: 100vh;
       background: #fff;
     }
-
     canvas {
       border: 1px solid #000;
     }
@@ -24,34 +21,40 @@
   <canvas id="canvas" width="512" height="512"></canvas>
   <script>
     const params = new URLSearchParams(window.location.search);
-    const text = params.get('text') || 'halo 😼😼👍';
+    const inputText = params.get('text') || 'halo 😼😼👍';
 
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
-    // Background
+    // Background putih
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Font settings
+    // Bagi menjadi baris (maks. 2 baris, sisanya di bawah)
+    const words = inputText.split(' ');
+    const line1 = words.slice(0, 2).join(' ');
+    const line2 = words.slice(2).join(' ');
+
     const fontSize = 60;
-    ctx.font = `bold ${fontSize}px Impact, sans-serif`;
+    ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    const x = canvas.width / 2;
-    const y = canvas.height / 2;
+    const centerX = canvas.width / 2;
 
-    // Outline stroke (hitam)
-    ctx.lineWidth = 8;
-    ctx.strokeStyle = '#000';
-    ctx.strokeText(text, x, y);
+    // Fungsi menggambar teks dengan stroke dan fill
+    function drawText(text, y) {
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = '#000';
+      ctx.strokeText(text, centerX, y);
+      ctx.fillStyle = '#fff';
+      ctx.fillText(text, centerX, y);
+    }
 
-    // Fill text (putih)
-    ctx.fillStyle = '#fff';
-    ctx.fillText(text, x, y);
+    drawText(line1, 200);
+    if (line2) drawText(line2, 290);
 
-    // Auto-download as PNG
+    // Auto-download sebagai brat.png
     setTimeout(() => {
       const link = document.createElement('a');
       link.download = 'brat.png';
