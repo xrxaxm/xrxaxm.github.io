@@ -6,11 +6,11 @@
   <style>
     body {
       margin: 0;
+      background: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: #fff;
     }
     canvas {
       border: 1px solid #000;
@@ -20,47 +20,60 @@
 <body>
   <canvas id="canvas" width="512" height="512"></canvas>
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const inputText = params.get('text') || 'halo 😼😼👍';
-
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
-    // Background putih
+    const params = new URLSearchParams(window.location.search);
+    const input = params.get('text') || 'brat 😼😼😼';
+
+    const maxWidth = 460;
+    const lineHeight = 60;
+    const fontSize = 50;
+
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Bagi menjadi baris (maks. 2 baris, sisanya di bawah)
-    const words = inputText.split(' ');
-    const line1 = words.slice(0, 2).join(' ');
-    const line2 = words.slice(2).join(' ');
-
-    const fontSize = 60;
     ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textBaseline = 'top';
 
-    const centerX = canvas.width / 2;
+    const words = input.split(' ');
+    const lines = [];
+    let currentLine = words[0];
 
-    // Fungsi menggambar teks dengan stroke dan fill
-    function drawText(text, y) {
+    for (let i = 1; i < words.length; i++) {
+      const word = words[i];
+      const width = ctx.measureText(currentLine + ' ' + word).width;
+      if (width < maxWidth) {
+        currentLine += ' ' + word;
+      } else {
+        lines.push(currentLine);
+        currentLine = word;
+      }
+    }
+    lines.push(currentLine);
+
+    const startY = (canvas.height - lines.length * lineHeight) / 2;
+
+    lines.forEach((line, i) => {
+      const x = canvas.width / 2;
+      const y = startY + i * lineHeight;
+      // stroke (outline)
       ctx.lineWidth = 8;
       ctx.strokeStyle = '#000';
-      ctx.strokeText(text, centerX, y);
+      ctx.strokeText(line, x, y);
+      // fill (white)
       ctx.fillStyle = '#fff';
-      ctx.fillText(text, centerX, y);
-    }
+      ctx.fillText(line, x, y);
+    });
 
-    drawText(line1, 200);
-    if (line2) drawText(line2, 290);
-
-    // Auto-download sebagai brat.png
+    // auto-download
     setTimeout(() => {
-      const link = document.createElement('a');
-      link.download = 'brat.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    }, 500);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = 'brat.png';
+      a.click();
+    }, 800);
   </script>
 </body>
 </html>
