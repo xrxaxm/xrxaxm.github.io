@@ -79,13 +79,13 @@
       startY += lineHeight;
     });
 
-    // auto-download with time-based filename
+    // auto-download dengan nama dinamis
     setTimeout(() => {
       const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
-      const filename = `brat-${h}-${m}-${s}.png`;
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      const filename = `brat_${hh}${mm}${ss}.png`;
 
       const link = document.createElement('a');
       link.download = filename;
