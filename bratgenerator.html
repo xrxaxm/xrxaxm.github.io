@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Brat Generator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Impact&display=swap');
+
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #fff;
+    }
+
+    canvas {
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="512" height="512"></canvas>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const text = params.get('text') || 'halo 😼😼👍';
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Font settings
+    const fontSize = 60;
+    ctx.font = `bold ${fontSize}px Impact, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const x = canvas.width / 2;
+    const y = canvas.height / 2;
+
+    // Outline stroke (hitam)
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = '#000';
+    ctx.strokeText(text, x, y);
+
+    // Fill text (putih)
+    ctx.fillStyle = '#fff';
+    ctx.fillText(text, x, y);
+
+    // Auto-download as PNG
+    setTimeout(() => {
+      const link = document.createElement('a');
+      link.download = 'brat.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }, 500);
+  </script>
+</body>
+</html>
