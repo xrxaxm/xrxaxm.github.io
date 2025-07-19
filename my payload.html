@@ -1,1 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><title>XSS Test</title></head>
+<body>
+  <h1>XSS Demo</h1>
+  <p id="output"></p>
 
+  <script>
+    const params = new URLSearchParams(location.search);
+    document.getElementById("output").innerHTML = params.get("name");
+  </script>
+</body>
+</html>
